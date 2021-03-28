@@ -7,9 +7,18 @@ struct shared_reduc_s
 {
 
     /* A COMPLETER */
-
+    
+    
+    int nb_thread_finish_work;   /* nombre de threads qui terminant leur travail  */
+    sem_t *semaphore;            /*Semaphore*/
+    pthread_mutex_t *mutex;      /*mutex*/
+    pthread_barrier_t *barriere; /*barriere*/
+    
+    
     int nvals;        /* taille du tableau red_val */
     double *red_val;  /* les valeurs a reduire */
+    
+    
 };
 typedef struct shared_reduc_s shared_reduc_t;
 
