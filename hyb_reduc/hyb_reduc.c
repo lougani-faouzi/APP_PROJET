@@ -29,6 +29,14 @@ void shared_reduc_init(shared_reduc_t *sh_red, int nthreads, int nvals)
 void shared_reduc_destroy(shared_reduc_t *sh_red)
 {
     /* A COMPLETER */
+    
+        //desalocation des elements de la structure
+	free(sh_red->red_val);
+	free(sh_red->semaphore);
+	pthread_barrier_destroy(sh_red->barriere);
+	free(sh_red->barriere);
+	pthread_mutex_destroy(sh_red->mutex);
+	free(sh_red->mutex);
 }
 
 /*
