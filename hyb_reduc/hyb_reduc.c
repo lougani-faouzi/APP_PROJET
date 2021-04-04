@@ -2,6 +2,10 @@
 
 #include <mpi.h>
 #include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+
+
 
 void shared_reduc_init(shared_reduc_t *sh_red, int nthreads, int nvals)
 {
@@ -18,7 +22,6 @@ void shared_reduc_init(shared_reduc_t *sh_red, int nthreads, int nvals)
 	sh_red->barriere=malloc(sizeof(pthread_barrier_t));
 	
 	//initialisation a 0
-	sh_red->nb_thread_finish_work=0;
 	memset(sh_red->red_val,0,sizeof(double)*nvals);
 	sem_init(sh_red->semaphore,0,0);
 	pthread_mutex_init(sh_red->mutex,NULL);
@@ -33,10 +36,10 @@ void shared_reduc_destroy(shared_reduc_t *sh_red)
         //desalocation des elements de la structure
 	free(sh_red->red_val);
 	free(sh_red->semaphore);
-	pthread_barrier_destroy(sh_red->barriere);
-	free(sh_red->barriere);
 	pthread_mutex_destroy(sh_red->mutex);
 	free(sh_red->mutex);
+	pthread_barrier_destroy(sh_red->barriere);
+	free(sh_red->barriere);
 }
 
 /*
@@ -47,6 +50,93 @@ void shared_reduc_destroy(shared_reduc_t *sh_red)
 void hyb_reduc_sum(double *in, double *out, shared_reduc_t *sh_red)
 {
     /* A COMPLETER */
+   
+    int i,j;
+    double *buffer;
+    int buffer_size=0;
+    int rang=0;
+    int est_maitre=0;
+    
+    //==>cette partie a pour but de faire la reduction thread 
+    pthread_mutex_lock(sh_red->mutex);
+    i=0;
+    while (i<sh_red->nvals)
+    {	
+        //sommer les valeurs en entrée du tableau *in dans avec celle de red_val*
+	sh_red->red_val[i]=sh_red->red_val[i]+in[i];
+	i++;
+    }
+    pthread_mutex_unlock(sh_red->mutex);
+    
+    //==>cette partie a pour but de faire la reduction MPI
+    pthread_mutex_lock(sh_red->mutex);
+    {
+	if(est_maitre==0 && sh_red->thread_maitre==0)
+    	{  
+    	    est_maitre=1;
+            sh_red->thread_maitre=1;	
+    	}
+    }
+    pthread_mutex_unlock(sh_red->mutex);
+    
+    pthread_barrier_wait(sh_red->barriere);
+    
+    if(est_maitre==0)
+    { 
+      i=0;
+      //on attend le thread maitre 
+      sem_wait(sh_red->semaphore);
+      while(i<sh_red->nvals)
+      {
+          out[i]=sh_red->red_val[i];
+          i++;
+      }    
+      
+    }
+    
+    if(est_maitre==1)
+    { 
+      //une fois on a eu le thread maitre on recupere la taille et le rang  
+      MPI_Comm_size(MPI_COMM_WORLD,&buffer_size);
+      buffer=malloc(sizeof(double)*buffer_size);
+      MPI_Comm_rank(MPI_COMM_WORLD,&rang);
+      
+      i=0;
+      while(i<sh_red->nvals)
+      {
+      // rasembler les valeurs des processus en un seul processus (le processus reception )cad le processus 0
+      MPI_Gather(&(sh_red->red_val[i]),1,MPI_DOUBLE,buffer,1,MPI_DOUBLE,0,MPI_COMM_WORLD); 
+     
+          if (rang==0 )
+          {
+              j=0;
+              while(j<buffer_size)
+              {
+                  out[i]=out[i]+buffer[j];
+                  j++;
+              }
+          } 
+      i++;
+      }
+      
+      //envoyer le resultat a tous les processus 
+      MPI_Bcast(out, sh_red->nvals, MPI_DOUBLE,0, MPI_COMM_WORLD);
+      
+      i=0;
+      while(i<sh_red->nvals)
+      {
+          sh_red->red_val[i]=out[i];
+          i++;
+      }
+     
+    }
+    
+    //on libére le sémaphore uniquement si on est pas au dernier thread 
+    if(sh_red->nb_threads!=0 )
+    {
+      sem_post(sh_red->semaphore);
+    } 
+    
+    free(buffer);
 }
-
 
