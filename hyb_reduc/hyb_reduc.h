@@ -2,18 +2,18 @@
 #define __HYB_REDUC_H
 
 #include <pthread.h>
-
+#include <semaphore.h>
 struct shared_reduc_s
 {
 
     /* A COMPLETER */
     
+    int thread_maitre;           //le thread maitre 
+    sem_t *semaphore;            //Semaphore
+    pthread_mutex_t *mutex;      //mutex
+    pthread_barrier_t *barriere; //barriere
+    int nb_threads;             //nombre total de threads 
     
-    int nb_thread_finish_work;   /* nombre de threads qui terminant leur travail  */
-    sem_t *semaphore;            /*Semaphore*/
-    pthread_mutex_t *mutex;      /*mutex*/
-    pthread_barrier_t *barriere; /*barriere*/
-    int nb_threads;              /* nombre total de threads */
     
     int nvals;        /* taille du tableau red_val */
     double *red_val;  /* les valeurs a reduire */
