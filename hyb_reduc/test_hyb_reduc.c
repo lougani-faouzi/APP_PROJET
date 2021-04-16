@@ -11,8 +11,6 @@
 
 #define NUM_WORKERS 4
 
-
-
 struct args_test_s
 {
     int trank;
