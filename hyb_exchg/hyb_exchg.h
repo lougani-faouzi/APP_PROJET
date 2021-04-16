@@ -8,6 +8,10 @@
 struct shared_exchg_s
 {
     /* A COMPLETER */
+    
+    int nb_threads;
+    double left,right;
+    
 };
 typedef struct shared_exchg_s shared_exchg_t;
 
