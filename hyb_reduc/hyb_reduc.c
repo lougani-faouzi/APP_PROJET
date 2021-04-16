@@ -73,7 +73,7 @@ void hyb_reduc_sum(double *in, double *out, shared_reduc_t *sh_red)
     //==>cette partie a pour but de faire la reduction MPI
     pthread_mutex_lock(sh_red->mutex);
     {  
-        //on defini une variable est_maitre qui nous permet de savoir le thread maitre en dehors du mutex 
+        //on defini une variable qui nous permet de savoir le thread maitre en dehors du mutex 
 	if(est_maitre==0 && sh_red->thread_maitre==0){  
     	    est_maitre=sh_red->thread_maitre=1;	
     						       }
@@ -94,8 +94,7 @@ void hyb_reduc_sum(double *in, double *out, shared_reduc_t *sh_red)
     }
     
     if(est_maitre==sh_red->thread_maitre)
-    { 
-      //une fois on a eu le thread maitre on recupere la taille et le rang  
+    { //une fois on a eu le thread maitre on recupere la taille et le rang  
       MPI_Comm_size(MPI_COMM_WORLD,&buffer_size);
       buffer=malloc(sizeof(double)*buffer_size);
       MPI_Comm_rank(MPI_COMM_WORLD,&rang);
