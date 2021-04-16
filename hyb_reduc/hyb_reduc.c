@@ -2,7 +2,6 @@
 
 #include <mpi.h>
 #include <stdlib.h>
-#include <string.h>
 #include <stdio.h>
 
 
@@ -22,7 +21,12 @@ void shared_reduc_init(shared_reduc_t *sh_red, int nthreads, int nvals)
 	sh_red->barriere=malloc(sizeof(pthread_barrier_t));
 	
 	//initialisation a 0
-	memset(sh_red->red_val,0,sizeof(double)*nvals);
+	int i=0;
+	while(i<nvals)
+	{
+	  sh_red->red_val[i]=0.0;
+	  i++;
+	}
 	sem_init(sh_red->semaphore,0,0);
 	pthread_mutex_init(sh_red->mutex,NULL);
 	pthread_barrier_init(sh_red->barriere,NULL,nthreads);
@@ -73,7 +77,7 @@ void hyb_reduc_sum(double *in, double *out, shared_reduc_t *sh_red)
     {
 	if(est_maitre==0 && sh_red->thread_maitre==0)
     	{  
-    	    est_maitre=1;
+    	     est_maitre=1;
             sh_red->thread_maitre=1;	
     	}
     }
