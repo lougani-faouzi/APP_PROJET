@@ -9,6 +9,8 @@
 void shared_exchg_init(shared_exchg_t *sh_ex, int nthreads)
 {
     /* A COMPLETER */
+    sh_ex->nb_threads=nthreads;
+    sh_ex->left=0;sh_ex->right=0;
 }
 
 void shared_exchg_destroy(shared_exchg_t *sh_ex)
