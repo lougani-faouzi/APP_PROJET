@@ -2,16 +2,16 @@
 #define __HYB_EXCHG_H
 
 #include <pthread.h>
+#include <semaphore.h>
 
 #include "mpi_decomp.h"
 
 struct shared_exchg_s
-{
-    /* A COMPLETER */
-    
-    int nb_threads;
-    double left,right;
-    
+{ 
+  int nb_threads;
+  double left,right;
+  sem_t *semaphore;
+  int premier;
 };
 typedef struct shared_exchg_s shared_exchg_t;
 
@@ -29,10 +29,10 @@ void shared_exchg_destroy(shared_exchg_t *sh_ex);
  * Si processus voisin n'existe pas, valeur correspondante affectee a 0
  */
 void hyb_exchg(
-	double *sh_arr,
-	shared_exchg_t *sh_ex,
-	double *val_to_rcv_left, double *val_to_rcv_right,
-	mpi_decomp_t *mpi_decomp);
+        double *sh_arr,
+        shared_exchg_t *sh_ex,
+        double *val_to_rcv_left, double *val_to_rcv_right,
+        mpi_decomp_t *mpi_decomp);
 
 #endif
 
