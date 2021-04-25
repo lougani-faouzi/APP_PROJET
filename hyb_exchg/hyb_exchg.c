@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <mpi.h>
 #include <stdlib.h>
-
+#define TAG 10
 /*
  * Initialisation/destruction d'une structure shared_exchg_t
  * nthreads : nombre de threads (du processus MPI) qui vont participer a l'echange
@@ -50,22 +50,22 @@ void hyb_exchg(
       {   //si on est dans une feuille 
           //donc on est dans le cas ou le processus MPI existe "a gauche"
           *val_to_rcv_right = 0.0;
-          MPI_Recv(&(sh_ex->left), 1, MPI_DOUBLE, mpi_decomp->mpi_rank - 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-          MPI_Send(&(sh_arr[0]), 1, MPI_DOUBLE, mpi_decomp->mpi_rank - 1, 0, MPI_COMM_WORLD);
+          MPI_Recv(&(sh_ex->left), 1, MPI_DOUBLE, mpi_decomp->mpi_rank - 1, TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+          MPI_Send(&(sh_arr[0]), 1, MPI_DOUBLE, mpi_decomp->mpi_rank - 1, TAG, MPI_COMM_WORLD);
       }
       if (mpi_decomp->mpi_rank == 0) 
       {   //si on est a la racine (processus du rang 0)  
           //donc on est dans le cas ou le processus MPI existe "a droite"
           *val_to_rcv_left = 0.0;
-          MPI_Send(&(sh_arr[mpi_decomp->mpi_nloc - 1]), 1, MPI_DOUBLE, 1, 0, MPI_COMM_WORLD);
-          MPI_Recv(&(sh_ex->right), 1, MPI_DOUBLE, 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+          MPI_Send(&(sh_arr[mpi_decomp->mpi_nloc - 1]), 1, MPI_DOUBLE, 1, TAG, MPI_COMM_WORLD);
+          MPI_Recv(&(sh_ex->right), 1, MPI_DOUBLE, 1, TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
       }
       if((mpi_decomp->mpi_rank != 0)&&(mpi_decomp->mpi_rank != mpi_decomp->mpi_nproc-1))
       {   //si on est dans un noeud (c'est a dire au milieu) on envoie et on recois dans les deux sens (gauche,droit)
-          MPI_Recv(&(sh_ex->left), 1, MPI_DOUBLE, mpi_decomp->mpi_rank - 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-          MPI_Send(&(sh_arr[mpi_decomp->mpi_nloc - 1]), 1, MPI_DOUBLE, mpi_decomp->mpi_rank + 1, 0, MPI_COMM_WORLD);
-          MPI_Recv(&(sh_ex->right), 1, MPI_DOUBLE, mpi_decomp->mpi_rank + 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-          MPI_Send(&(sh_arr[0]), 1, MPI_DOUBLE, mpi_decomp->mpi_rank - 1, 0, MPI_COMM_WORLD);  
+          MPI_Recv(&(sh_ex->left), 1, MPI_DOUBLE, mpi_decomp->mpi_rank - 1, TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+          MPI_Send(&(sh_arr[mpi_decomp->mpi_nloc - 1]), 1, MPI_DOUBLE, mpi_decomp->mpi_rank + 1, TAG, MPI_COMM_WORLD);
+          MPI_Recv(&(sh_ex->right), 1, MPI_DOUBLE, mpi_decomp->mpi_rank + 1, TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+          MPI_Send(&(sh_arr[0]), 1, MPI_DOUBLE, mpi_decomp->mpi_rank - 1, TAG, MPI_COMM_WORLD);  
       }
       if (mpi_decomp->mpi_nproc-1== 0) 
       {   //Si processus voisin n'existe pas (arbre a un seule noeud
